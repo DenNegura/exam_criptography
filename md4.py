@@ -1,5 +1,7 @@
 import struct
-from print_bits import TransformBits as tb
+from print_bits import TransformBits
+
+tb = TransformBits(' ', TransformBits.BIT)
 
 
 class MD4:
@@ -19,7 +21,7 @@ class MD4:
 
         self.msg = msg
         print('Исходное сообщение : ', msg)
-        print('Исходное сообщение в битах : ', tb.transform(msg, tb.BIT))
+        print('Исходное сообщение в битах : ', tb.transform(msg))
         to_msg = msg
         # Pre-processing: Total length is a multiple of 512 bits.
         ml = len(msg) * 8
@@ -39,6 +41,7 @@ class MD4:
         chunks = [msg[i: i + 64] for i in range(0, len(msg), 64)]
         print('разбиваем сообщение на части, кратные 512. Всего: ', len(chunks))
         self._process(chunks)
+        print('\n\nКонец операций. Значение записываем начиная с младшего бита A, кончая старшим D.')
 
     def __repr__(self):
         if self.msg:
@@ -130,8 +133,18 @@ class MD4:
                 a2 = h[i]
                 print(f'{n + 1})\t{tp(a2)} = ({tp(a)} + ({tp(b)} ^ {tp(c)} ^ {tp(d)}) + 0x6ED9EBA1) << {S}')
 
-            print('\n\nКонкатенация значений')
+            print(f'\n\nКонкатенация значений блока {num_chunk}')
+            num_chunk += 1
+
+            h1 = self.h.copy()
+            h2 = h.copy()
+
             self.h = [((v + n) & MD4.mask) for v, n in zip(self.h, h)]
+
+            print(f'A = A + AA: {tp(self.h[0])} = {tp(h1[0])} + {tp(h2[0])}')
+            print(f'B = B + BB: {tp(self.h[1])} = {tp(h1[1])} + {tp(h2[1])}')
+            print(f'C = C + CC: {tp(self.h[2])} = {tp(h1[2])} + {tp(h2[2])}')
+            print(f'D = D + DD: {tp(self.h[3])} = {tp(h1[3])} + {tp(h2[3])}')
 
     @staticmethod
     def F(x, y, z):
@@ -171,7 +184,10 @@ def main():
         for message, expected in zip(messages, known_hashes):
             # print("Message: ", message)
             # print("Expected:", expected)
-            print("Actual:  ", MD4(message).hexdigest())
+            if tb.get_sys_default() == tb.BIT:
+                print("Actual:  ", tb.to_bin(MD4(message).hexdigest(), tb.HEX))
+            else:
+                print("Actual:  ", MD4(message).hexdigest())
             print()
 
 
