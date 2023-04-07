@@ -2,41 +2,39 @@ import bitstring
 
 
 class TransformBits:
-
     BYTE = 'byte'
 
     BIT = 'bit'
 
-    @staticmethod
-    def separate(msg, sys=BIT):
-        print(sys)
-        # TO DO: в зависимости от sys переводить биты в байты, или оставить так
-        return ' '.join([msg[i:i + 8] for i in range(0, len(msg), 8)])
+    def separate(self, msg, sys=BIT):
+        bits_list = [msg[i:i + 8] for i in range(0, len(msg), 8)]
+        if sys == TransformBits.BYTE:
+            bytes_list = [int(x, 2) for x in bits_list]
+            return bytes(bytes_list)
+        return ' '.join(bits_list)
 
-    @staticmethod
-    def bytes_to_bits(msg):
+    def bytes_to_bits(self, msg):
         return bitstring.BitArray(msg).bin
 
-    @staticmethod
-    def str_to_bits(msg):
+    def str_to_bits(self, msg):
         return ''.join([format(ord(ch), '08b') for ch in msg])
 
-    @staticmethod
-    def transform(msg, sys=BIT) -> str:
+    def transform(self, msg, sys=BIT) -> str:
         if type(msg) is bytes:
-            return TransformBits\
-                .separate(TransformBits.bytes_to_bits(msg), sys)
+            return self.separate(self.bytes_to_bits(msg), sys)
         elif type(msg) is str:
-            return TransformBits\
-                .separate(TransformBits.str_to_bits(msg),sys)
+            return self.separate(self.str_to_bits(msg), sys)
         return ''
 
-    @staticmethod
-    def to_bin(msg):
+    def to_bin(self, msg):
         return bin(msg)[2:]
 
-    @staticmethod
-    def add_bits(msg, bits_count):
+    def add_bits(self, msg, bits_count):
         if type(msg) is int:
-            msg = TransformBits.to_bin(msg)
+            msg = self.to_bin(msg)
         return ('0' * (bits_count - len(msg))) + msg
+
+
+tb = TransformBits()
+byte = tb.transform('10000000', tb.BYTE)
+print(hex(int('10000000', 2)))
